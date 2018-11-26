@@ -8,6 +8,6 @@ password :
 
 2. Docker run
 
-    docker build -t dbdemo .
+    docker build -t spring-boot-demo .
  
-    docker run -p 5000:8080 dbdemo
+    docker run -p 5000:8080 spring-boot-demo
