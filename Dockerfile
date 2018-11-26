@@ -6,7 +6,7 @@ VOLUME /tmp
 
 EXPOSE 8080
 
-ARG JAR_FILE=build/libs/spring-boot-demo-0.0.1-SNAPSHOT.jar
+ARG JAR_FILE=/build/libs/spring-boot-demo-0.0.1-SNAPSHOT.jar
 
 ADD ${JAR_FILE} spring-boot-demo.jar
 
