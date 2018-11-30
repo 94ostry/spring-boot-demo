@@ -17,7 +17,9 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Builder
@@ -56,10 +58,9 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags;
+    private Set<Tag> tags;
 
     public void addComment(PostComment comment) {
-
         if(comments == null) {
             comments = new ArrayList<>();
         }
@@ -69,6 +70,10 @@ public class Post {
     }
 
     public void removeComment(PostComment comment) {
+        if(comments == null) {
+            comments = new ArrayList<>();
+        }
+
         comments.remove(comment);
         comment.setPost(null);
     }
@@ -86,7 +91,7 @@ public class Post {
 
     public void addTag(Tag tag) {
         if(tags == null) {
-            tags = new ArrayList<>();
+            tags = new HashSet<>();
         }
 
         tags.add(tag);

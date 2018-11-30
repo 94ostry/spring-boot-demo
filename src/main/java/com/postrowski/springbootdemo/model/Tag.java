@@ -12,8 +12,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Builder
@@ -31,17 +33,20 @@ public class Tag {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
-    private List<Post> posts;
+    private Set<Post> posts;
 
     public void addPost(Post post) {
         if(posts == null){
-            posts = new ArrayList<>();
+            posts = new HashSet<>();
         }
 
         posts.add(post);
     }
 
     public void removePost(Post post) {
+        if(posts == null) {
+            posts = new HashSet<>();
+        }
         posts.remove(post);
     }
 

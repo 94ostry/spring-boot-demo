@@ -307,4 +307,46 @@ public class PostRepositoryTest {
             return null;
         });
     }
+
+    @Test
+    public void shouldRemoveTag() {
+        Post detachedPost = transactionTemplate.execute(status -> {
+            Post post = Post.builder().title("Title1").build();
+            post.addTag(Tag.builder().name("Tag1").build());
+            post.addTag(Tag.builder().name("Tag2").build());
+
+            return postRepository.save(post);
+        });
+
+        transactionTemplate.execute(status -> {
+            Post post = entityManager.find(Post.class, detachedPost.getId());
+//            Post post = entityManager.createQuery(
+//                    "select p " +
+//                            "from Post p " +
+//                            "join fetch p.tags t " +
+//                            "where p.id = :id " +
+//                            "order by t.id", Post.class)
+//                    .setParameter("id", detachedPost.getId())
+//                    .getSingleResult();
+
+            post.removeTag(Tag.builder().name("Tag1").build());
+            return null;
+        });
+
+        //verify
+        transactionTemplate.execute(status -> {
+            Post post = entityManager.createQuery(
+                    "select p " +
+                            "from Post p " +
+                            "join fetch p.tags t " +
+                            "where p.id = :id " +
+                            "order by t.id", Post.class)
+                    .setParameter("id", detachedPost.getId())
+                    .getSingleResult();
+
+            assertEquals(1, post.getTags().size());
+            return null;
+        });
+
+    }
 }
