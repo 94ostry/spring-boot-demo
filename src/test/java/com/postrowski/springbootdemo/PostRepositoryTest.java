@@ -3,6 +3,7 @@ package com.postrowski.springbootdemo;
 import com.postrowski.springbootdemo.model.Post;
 import com.postrowski.springbootdemo.model.PostComment;
 import com.postrowski.springbootdemo.model.PostDetails;
+import com.postrowski.springbootdemo.model.Tag;
 import com.postrowski.springbootdemo.service.PostRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,7 +159,7 @@ public class PostRepositoryTest {
         * It must update the existing database records which can be found in the incoming collection.
         * It must add the records found in the incoming collection, which cannot be found in the current database snapshot.
         */
-        transactionTemplate.execute(status -> {
+        Post deatachedPost = transactionTemplate.execute(status -> {
 
             Post post = entityManager
                     .createQuery("select p from Post p join fetch p.comments where p.id = :id", Post.class)
@@ -175,7 +176,7 @@ public class PostRepositoryTest {
             newComments.removeAll(post.getComments());
             deatachedComments.removeAll(newComments);
 
-            for(PostComment existingComment : deatachedComments) {
+            for (PostComment existingComment : deatachedComments) {
                 existingComment.setPost(post);
 
                 PostComment mergedComment = entityManager
@@ -187,16 +188,16 @@ public class PostRepositoryTest {
                 );
             }
 
-            for(PostComment newComment : newComments) {
+            for (PostComment newComment : newComments) {
                 post.addComment(newComment);
             }
 
-            return null;
+            return post;
         });
-        verifyResultsModifiedCollection();
+        verifyResultsModifiedCollection(deatachedPost.getId());
     }
 
-    private void verifyResultsModifiedCollection() {
+    private void verifyResultsModifiedCollection(Long postId) {
         transactionTemplate.execute(status -> {
             Post post = entityManager.createQuery(
                     "select p " +
@@ -204,7 +205,7 @@ public class PostRepositoryTest {
                             "join fetch p.comments c " +
                             "where p.id = :id " +
                             "order by c.id", Post.class)
-                    .setParameter("id", 1L)
+                    .setParameter("id", postId)
                     .getSingleResult();
 
             assertEquals(4, post.getComments().size());
@@ -282,4 +283,28 @@ public class PostRepositoryTest {
     }
 
 
+    @Test
+    public void shouldCreateTag() {
+        Post detachedPost = transactionTemplate.execute(status -> {
+            Post post = Post.builder().title("Title1").build();
+            post.addTag(Tag.builder().name("Tag1").build());
+            post.addTag(Tag.builder().name("Tag2").build());
+
+            return postRepository.save(post);
+        });
+
+        transactionTemplate.execute(status -> {
+            Post post = entityManager.createQuery(
+                    "select p " +
+                            "from Post p " +
+                            "join fetch p.tags t " +
+                            "where p.id = :id " +
+                            "order by t.id", Post.class)
+                    .setParameter("id", detachedPost.getId())
+                    .getSingleResult();
+
+            assertEquals(2, post.getTags().size());
+            return null;
+        });
+    }
 }
