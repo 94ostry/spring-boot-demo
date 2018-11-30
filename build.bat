@@ -1,16 +1,12 @@
 echo "Build Gradle"
+rem call gradlew clean build
 call gradlew clean build -x test
 
-echo "Remove docker container"
-docker rm -f spring-boot-demo
+echo "Build-Run Post-service"
 
-echo "Remove docker image"
-docker rmi spring-boot-demo:1.0.0
-
-echo "Build docker image"
-docker build --no-cache -t spring-boot-demo:1.0.0 .
-
-echo "Run docker container"
-docker run -p 5000:8080 --name spring-boot-demo spring-boot-demo:1.0.0
+docker rm -f post-service
+docker rmi post-service:1.0.0
+docker build --no-cache -t post-service:1.0.0 ./post-service
+docker run -p 5000:8080 --name post-service post-service:1.0.0
 
 PAUSE
